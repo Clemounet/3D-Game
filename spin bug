@@ -1,5 +1,5 @@
 from ursina import *
-
+from math import sin, cos, radians, degrees, atan2, sqrt
 app = Ursina()
 
 ground = Entity(
@@ -65,10 +65,10 @@ def update():
             break
 
     if held_keys['left arrow']:
-        camera_angle -= 90 * time.dt
+        camera_angle -= 100 * time.dt
 
     if held_keys['right arrow']:
-        camera_angle += 90 * time.dt
+        camera_angle += 100 * time.dt
 
     angle = radians(camera_angle)
 
@@ -78,8 +78,13 @@ def update():
         player.z - cos(angle) * camera_distance
     )
 
-    camera.look_at(player.position + Vec3(0, 1, 0))
+    target = player.position + Vec3(0, 1, 0)
+    direction = target - camera.position
 
+    yaw = degrees(atan2(direction.x, direction.z))
+    pitch = -degrees(atan2(direction.y, sqrt(direction.x**2 + direction.z**2)))
+
+    camera.rotation = (pitch, yaw, 0)
 def input(key):
     global velocity_y
 
