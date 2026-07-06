@@ -1,5 +1,6 @@
 from ursina import *
 from math import sin, cos, radians, degrees, atan2, sqrt
+from ursina.prefabs.button import Button
 app = Ursina()
 
 ground = Entity(
@@ -36,11 +37,36 @@ gravity = 20
 jump_force = 8
 velocity_y = 0
 grounded = False
+game_started = False
 
+def start_game():
+    global game_started
+
+    game_started = True
+
+    play_button.disable()
+    title.disable()
+
+title = Text(
+    text="My Grosse Bite",
+    origin=(0,0),
+    scale=3,
+    y=.25
+)
+
+play_button = Button(
+    text="PLAY",
+    scale=(0.3,0.1),
+    color=color.azure,
+    y=-0.1
+)
+
+play_button.on_click = start_game
 
 def update():
     global velocity_y, grounded, camera_angle
-
+    if not game_started:
+        return
     move = Vec3(
         held_keys['d'] - held_keys['a'],
         0,
@@ -87,6 +113,9 @@ def update():
     camera.rotation = (pitch, yaw, 0)
 def input(key):
     global velocity_y
+
+    if not game_started:
+        return
 
     if key == 'space' and grounded:
         velocity_y = jump_force
