@@ -39,13 +39,39 @@ velocity_y = 0
 grounded = False
 game_started = False
 
+easter_image = Entity(
+    parent=camera.ui,
+    model='quad',
+    texture='easter_egg.png',
+    scale=(0.8, 0.8),
+    enabled=False
+)
+
 def start_game():
     global game_started
 
     game_started = True
 
     play_button.disable()
+    easter_button.disable()
     title.disable()
+
+def show_easter_egg():
+    title.disable()
+    play_button.disable()
+    easter_button.disable()
+
+    easter_image.enable()
+    back_button.enable()
+
+
+def back_to_menu():
+    easter_image.disable()
+    back_button.disable()
+
+    title.enable()
+    play_button.enable()
+    easter_button.enable()
 
 title = Text(
     text="My Grosse Bite",
@@ -61,22 +87,56 @@ play_button = Button(
     y=-0.1
 )
 
+easter_button = Button(
+    text='Easter Egg',
+    scale=(0.3, 0.1),
+    color=color.orange,
+    y=-0.25
+)
+
+back_button = Button(
+    text='Back',
+    scale=(0.2, 0.08),
+    y=-0.4,
+    enabled=False
+)
+
+back_button.on_click = back_to_menu
+easter_button.on_click = show_easter_egg
 play_button.on_click = start_game
 
 def update():
     global velocity_y, grounded, camera_angle
     if not game_started:
         return
-    move = Vec3(
-        held_keys['d'] - held_keys['a'],
-        0,
-        held_keys['w'] - held_keys['s']
+    forward = Vec3(
+    -sin(radians(camera_angle)),
+    0,
+    cos(radians(camera_angle))
+    )
+
+    right = Vec3(
+    cos(radians(camera_angle)),
+    0,
+    sin(radians(camera_angle))
+    )
+
+    move = (
+    forward * (held_keys['w'] - held_keys['s']) +
+    right * (held_keys['d'] - held_keys['a'])
     )
 
     if move.length() > 0:
         move = move.normalized()
 
     player.position += move * speed * time.dt
+
+    player.rotation_y = lerp(player.rotation_y,
+                        degrees(atan2(move.x, move.z)),
+                         8 * time.dt)
+
+    # Turn the cube to face the movement direction
+    player.rotation_y = degrees(atan2(move.x, move.z))
 
     velocity_y -= gravity * time.dt
     player.y += velocity_y * time.dt
